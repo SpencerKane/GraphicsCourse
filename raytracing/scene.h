@@ -17,7 +17,6 @@ public:
 
     Scene(list<Primitive> primitives, Vec3 lightPosition, View camera);
 
-
 public:
     list<Primitive> primitives;
 
