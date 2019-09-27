@@ -4,13 +4,21 @@ ImagePlane::ImagePlane()
 {
     lowerLeft = Vec3(-1, -1, -1);
     upperRight = Vec3(1, 1, -1);
-    resW = 1000;
-    resH = 1000;
+    img = Image<Vec3>(1000, 1000);
 }
 
 ImagePlane::ImagePlane(Vec3 ll, Vec3 ur, uint resW, uint resH){
     lowerLeft = Vec3(ll);
     upperRight = Vec3(ur);
-    this->resH = resH;
-    this->resW = resW;
+    this->img = Image<Vec3>(resW, resH);
 }
+
+long long ImagePlane::rows() {
+    return this->img.rows();
+}
+
+long long ImagePlane::cols() {
+    return this->img.cols();
+}
+
+

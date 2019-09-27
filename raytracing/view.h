@@ -6,7 +6,7 @@ using namespace OpenGP;
 class View
 {
 public:
-    View();
+    View(Vec3 up, Vec3 viewDir, Vec3 viewLoc);
 
 public:
     Vec3 up, viewDirection, viewLocation;

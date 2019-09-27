@@ -21,7 +21,7 @@ public:
     list<Primitive> primitives;
 
     //Light info
-    Light light;
+    Light* light;
 
     View camera;
 

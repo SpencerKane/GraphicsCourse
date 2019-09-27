@@ -4,7 +4,8 @@
 using namespace OpenGP;
 using namespace std;
 
-static const float DIFFUSE = 0.5, SPECULAR = 0.5, PRECISION = 0.000001f;
+static const Vec3 DIFFUSE = Vec3(0.5f, 0.5f, 0.5f), SPECULAR = Vec3(0.5f, 0.5f, 0.5f);
+static const float PRECISION = 0.000001f;
 static const uint GLOSSINESS = 32;
 static bool IS_OPAQUE = false;
 
@@ -19,17 +20,16 @@ using Colour = Vec3;
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material::Material(string name, float diffuse, float specular, uint glossiness,
-                       Colour color, bool isTransparent) {
+    Material::Material(string name, Vec3 KdRGB, Vec3 KsRGB, uint glossiness,
+                       bool isTransparent) {
         //Users can't break these
         this->name = name;
         this->isTransparent = isTransparent;
 
         //Need to enforce restrictions on these
-        this->setDiffuseConstant(diffuse);
-        this->setSpecularConstant(specular);
+        this->setDiffuseConstant(KdRGB);
+        this->setSpecularConstant(KsRGB);
         this->setGlossinessFactor(glossiness);
-        this->color = truncateVector(0.0f, 1.0f, color);
     }
 
     /* Other Constructors */
@@ -41,9 +41,8 @@ using Colour = Vec3;
      * @param glossiness The glossiness factor, should be a small power of 2 (i.e 32)
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      */
-    Material::Material(string name, float diffuse, float specular, uint glossiness,
-                       Colour color) {
-        Material(name, diffuse, specular, glossiness, color, IS_OPAQUE);
+    Material::Material(string name, Vec3 KdRGB, Vec3 KsRGB, uint glossiness) {
+        Material(name, KdRGB, KsRGB, glossiness, IS_OPAQUE);
     }
 
     /**
@@ -54,9 +53,9 @@ using Colour = Vec3;
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material::Material(string name, float diffuse, float specular, Colour color,
+    Material::Material(string name, Vec3 KdRGB, Vec3 KsRGB,
                        bool isTransparent) {
-        Material(name, diffuse, specular, GLOSSINESS, color, isTransparent);
+        Material(name, KdRGB, KsRGB, GLOSSINESS, isTransparent);
     }
 
     /**
@@ -67,8 +66,8 @@ using Colour = Vec3;
      * @param specular The specular constant of the material from 0 to 1
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      */
-    Material::Material(string name, float diffuse, float specular, Colour color) {
-        Material(name, diffuse, specular, GLOSSINESS, color, IS_OPAQUE);
+    Material::Material(string name, Vec3 KdRGB, Vec3 KsRGB) {
+        Material(name, KdRGB, KsRGB, GLOSSINESS, IS_OPAQUE);
     }
 
     /**
@@ -78,8 +77,8 @@ using Colour = Vec3;
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material::Material(string name, uint glossiness, Colour color, bool isTransparent) {
-        Material(name, DIFFUSE, SPECULAR, glossiness, color, isTransparent);
+    Material::Material(string name, uint glossiness, bool isTransparent) {
+        Material(name, DIFFUSE, SPECULAR, glossiness, isTransparent);
     }
 
     /**
@@ -88,8 +87,8 @@ using Colour = Vec3;
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material::Material(string name, Colour color, bool isTransparent) {
-        Material(name, DIFFUSE, SPECULAR, GLOSSINESS, color, isTransparent);
+    Material::Material(string name, bool isTransparent) {
+        Material(name, DIFFUSE, SPECULAR, GLOSSINESS, isTransparent);
     }
 
     /**
@@ -102,8 +101,8 @@ using Colour = Vec3;
      * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material::Material(string name, Colour color) {
-        Material(name, DIFFUSE, SPECULAR, GLOSSINESS, color, IS_OPAQUE);
+    Material::Material(string name) {
+        Material(name, DIFFUSE, SPECULAR, GLOSSINESS, IS_OPAQUE);
     }
 
     /* Getters */
@@ -118,15 +117,15 @@ using Colour = Vec3;
     /**
      * @return The diffuse constant of the material
      */
-    float Material::getDiffuseConstant() {
-        return this->Kd;
+    Vec3 Material::getDiffuseConstant() {
+        return this->KdRGB;
     }
 
     /**
      * @return The specular constant of the material
      */
-    float Material::getSpecularConstant() {
-        return this->Ks;
+    Vec3 Material::getSpecularConstant() {
+        return this->KsRGB;
     }
 
     /**
@@ -146,15 +145,6 @@ using Colour = Vec3;
     }
 
     /**
-     * @brief getColor Returns the color of the material in the form of vector with
-     * components in the interval [0, 1]
-     * @return The color of the material
-     */
-    Colour Material::getColor() {
-        return this->color;
-    }
-
-    /**
      * @return True if light should pass through this material,
      * false otherwise
      */
@@ -164,14 +154,14 @@ using Colour = Vec3;
 
     /* Setters */
 
-    float Material::setDiffuseConstant(float Kd) {
-        this->Kd = truncate(0.0f, 1.0f, Kd);
-        return this->Kd;
+    Vec3 Material::setDiffuseConstant(Vec3 Kd) {
+        this->KdRGB = truncateVector(0.0f, 1.0f, Kd);
+        return this->KdRGB;
     }
 
-    float Material::setSpecularConstant(float Ks) {
-        this->Ks = truncate(0.0f, 1.0f, Ks);
-        return this->Ks;
+    Vec3 Material::setSpecularConstant(Vec3 Ks) {
+        this->KsRGB = truncateVector(0.0f, 1.0f, Ks);
+        return this->KsRGB;
     }
 
     float Material::setRefractiveIndex(float n) {

@@ -9,11 +9,9 @@ using Colour = Vec3;
 class Light
 {
 public:
-    Light(Vec3 center, Vec3 color);
+    virtual float calculateIntersectDistance(Vec3 ray, Vec3 point) = 0;
 
-    Light(Vec3 center);
-
-    Vec3 calculateIntersectPoint(Vec3 ray);
+    virtual ~Light();
 public:
     Vec3 center;
     Vec3 color;

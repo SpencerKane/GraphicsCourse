@@ -11,17 +11,25 @@ using Colour = Vec3;
 class Material
 {
 public:
+    Material() {
+        Material("");
+    }
+
+    Material(string name, Vec3 KdRGB, Vec3 KsRGB, float refracIndex, uint glossiness,
+             bool isTransparent) {
+        *this = Material(name, KdRGB, KsRGB, glossiness, isTransparent);
+        this->setRefractiveIndex(refracIndex);
+    }
     /**
      * @brief Material This is the base constructor for a material
      * @param name The name of the material
      * @param diffuse The diffuse constant of the material from 0 to 1
      * @param specular The specular constant of the material from 0 to 1
      * @param glossiness The glossiness factor, should be a small power of 2 (i.e 32)
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material(string name, float diffuse, float specular, uint glossiness,
-             Colour color, bool isTransparent);
+    Material(string name, Vec3 KdRGB, Vec3 KsRGB, uint glossiness,
+             bool isTransparent);
 
     /* Other Constructors */
     /**
@@ -30,20 +38,17 @@ public:
      * @param diffuse The diffuse constant of the material from 0 to 1
      * @param specular The specular constant of the material from 0 to 1
      * @param glossiness The glossiness factor, should be a small power of 2 (i.e 32)
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      */
-    Material(string name, float diffuse, float specular, uint glossiness,
-             Colour color);
+    Material(string name, Vec3 KdRGB, Vec3 KsRGB, uint glossiness);
 
     /**
      * @brief Material Produces a material assuming a glossiness factor of 32
      * @param name The name of the material
      * @param diffuse The diffuse constant of the material from 0 to 1
      * @param specular The specular constant of the material from 0 to 1
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material(string name, float diffuse, float specular, Colour color,
+    Material(string name, Vec3 KdRGB, Vec3 KsRGB,
              bool isTransparent);
 
     /**
@@ -52,26 +57,23 @@ public:
      * @param name The name of the material
      * @param diffuse The diffuse constant of the material from 0 to 1
      * @param specular The specular constant of the material from 0 to 1
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      */
-    Material(string name, float diffuse, float specular, Colour color);
+    Material(string name, Vec3 KdRGB, Vec3 KsRGB);
 
     /**
      * @brief Material Produces a material assuming standard diffuse and specular constants
      * @param name The name of the material
      * @param glossiness The glossiness factor, should be a small power of 2 (i.e 32)
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material(string name, uint glossiness, Colour color, bool isTransparent);
+    Material(string name, uint glossiness, bool isTransparent);
 
     /**
      * @brief Material Produces a material assuming standard values for all constants
      * @param name The name of the material
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material(string name, Colour color, bool isTransparent);
+    Material(string name, bool isTransparent);
 
     /**
      * @brief Material Produces a colored material assuming it is opaque and
@@ -80,10 +82,9 @@ public:
      * @param diffuse The diffuse constant of the material from 0 to 1
      * @param specular The specular constant of the material from 0 to 1
      * @param glossiness The glossiness factor, should be a small power of 2 (i.e 32)
-     * @param color A Vec3 containing 3 floats between 0 and 1 representing the color of the material
      * @param isTransparent True iff the material is transparent
      */
-    Material(string name, Colour color);
+    Material(string name);
 
     /* Getters */
     /**
@@ -95,12 +96,12 @@ public:
     /**
      * @return The diffuse constant of the material
      */
-    float getDiffuseConstant();
+    Vec3 getDiffuseConstant();
 
     /**
      * @return The specular constant of the material
      */
-    float getSpecularConstant();
+    Vec3 getSpecularConstant();
 
     /**
      * @brief getRefractiveIndex Returns the refractive index of
@@ -129,9 +130,9 @@ public:
 
     /* Setters */
 
-    float setDiffuseConstant(float Kd);
+    Vec3 setDiffuseConstant(Vec3 KdRGB);
 
-    float setSpecularConstant(float Ks);
+    Vec3 setSpecularConstant(Vec3 KsRGB);
 
     float setRefractiveIndex(float n);
 
@@ -151,7 +152,9 @@ private:
      * or the nearest end of the range if not
      */
     uint truncateInt(uint min, uint max, uint value) const {
-        return (uint) truncate((float) min, (float) max, (float) value);
+        return static_cast<uint>(truncate(static_cast<float>(min),
+                               static_cast<float>(max),
+                               static_cast<float>(value)));
     }
 
     /**
@@ -190,11 +193,10 @@ private:
 
 public:
     string name;
-    float Kd;//Diffuse Constant
-    float Ks;//Specular Constant
+    Vec3 KdRGB;//Diffuse Constant
+    Vec3 KsRGB;//Specular Constant
     float refractiveIndex; //How light will bend passing through this material
     uint alpha;//Glossiness factor
-    Colour color;
     bool isTransparent;
 
 };

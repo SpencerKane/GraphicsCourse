@@ -1,10 +1,12 @@
 #include "ray.h"
 
 Ray::Ray(Vec3 vector){
+    vector.normalize();
     this->vector = Vec3(vector);
 }
 
 Ray::Ray(Vec3 vector, uint timer) {
+    vector.normalize();
     this->vector = Vec3(vector);
     this->timer = timer;
 }
