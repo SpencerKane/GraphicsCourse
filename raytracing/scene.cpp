@@ -1,15 +1,12 @@
 #include "scene.h"
 
-Scene::Scene(list<Primitive> primitives, Vec3 lightPosition, Colour ambientColor,
-      float lightIntensity, View camera) {
+Scene::Scene(list<Primitive*> primitives, Light *light, Colour ambientColor, View camera) {
     this->primitives = primitives;
-    this->lightPosition = lightPosition;
+    this->light = light;
     this->ambientColor = ambientColor;
-    this->ambientIntensity = lightIntensity;
-    this->camera = camera;
+    this->camera = View(camera.up, camera.viewDirection, camera.viewLocation);
 }
 
-Scene::Scene(list<Primitive> primitives, Vec3 lightPosition, View camera) {
-    *this = Scene(primitives, lightPosition, Colour(1.0f, 1.0f, 1.0f),
-                  1.0f, camera);
+Scene::Scene(list<Primitive*> primitives, Light *light, View camera) {
+    *this = Scene(primitives, light, Colour(1.0f, 1.0f, 1.0f), camera);
 }

@@ -1,4 +1,6 @@
 #include "pointlight.h"
+#include <stdio.h>
+
 static const float PRECISION = 0.000001f;
 
 PointLight::PointLight(Vec3 newCenter, Vec3 newColor) {
@@ -7,7 +9,8 @@ PointLight::PointLight(Vec3 newCenter, Vec3 newColor) {
 }
 
 PointLight::PointLight(Vec3 newCenter) {
-    *this = PointLight(newCenter, Vec3(1.0f, 1.0f, 1.0f));
+    this->center = newCenter;
+    this->color = Vec3(1.0f, 1.0f, 1.0f);
 }
 
 float PointLight::calculateIntersectDistance(Vec3 ray, Vec3 rayOrigin) {
@@ -31,4 +34,8 @@ float PointLight::calculateIntersectDistance(Vec3 ray, Vec3 rayOrigin) {
     } else {
         return 0.0f;
     }
+}
+
+PointLight::~PointLight() {
+    std::cout << "Destructing pointlight" << std::endl;
 }

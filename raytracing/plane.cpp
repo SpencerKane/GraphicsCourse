@@ -1,5 +1,4 @@
 #include "plane.h"
-#include "view.h"
 
 const float PRECISION = 0.0000001f;
 
@@ -11,11 +10,19 @@ Plane::Plane(Vec3 vectorOne, Vec3 vectorTwo, Vec3 point, Material newMat) {
 }
 
 Plane::Plane(Vec3 vectorOne, Vec3 vectorTwo, Material newMat) {
-    if (abs(vectorOne.dot(vectorTwo)) < PRECISION) { //Cannot be collinear
-        *this = Plane(Vec3(1, 0, 0), Vec3(0, 0, 0), mat);
+    Plane* p;
+    cout << "In plane"<< endl;
+    if (vectorOne.cross(vectorTwo).isApprox(Vec3(0.f, 0.f, 0.f))) { //Cannot be collinear
+        p = new Plane(Vec3(1, 0, 0), Vec3(0, 0, 0), mat);
     } else {
-        *this = Plane(vectorOne, vectorTwo, Vec3(0, 0, 0), newMat);
+        p = new Plane(vectorOne, vectorTwo, Vec3(0, 0, 0), newMat);
     }
+
+    this->vectorOne = p->vectorOne;
+    this->vectorTwo = p->vectorTwo;
+    this->center = p->center;
+    Primitive::mat = p->mat;
+    delete p;
 }
 
 Plane::Plane(Material newMat) {
@@ -26,12 +33,12 @@ Vec3 Plane::getNormal() const {
     return Vec3(this->vectorOne.cross(vectorTwo));
 }
 
-float Plane::calculateIntersectDistance(Vec3 ray, View camera) const {
+float Plane::calculateIntersectDistance(Vec3 ray, Vec3 point) const {
     Vec3 normal = getNormal();
 
     //Calculate two parts of the equation
     float numerator = this->center.dot(normal)
-            - camera.viewLocation.dot(normal); //As seen in the notes
+            - point.dot(normal); //As seen in the notes
     float denominator = normal.dot(ray);
 
     //Verify the ray isn't parallel

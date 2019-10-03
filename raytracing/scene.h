@@ -12,13 +12,13 @@ using namespace std;
 class Scene
 {
 public:
-    Scene(list<Primitive> primitives, Vec3 lightPosition, Colour ambientColor,
-          float lightIntensity, View camera);
+    Scene(list<Primitive*> primitives, Light* light, Colour ambientColor,
+          View camera);
 
-    Scene(list<Primitive> primitives, Vec3 lightPosition, View camera);
+    Scene(list<Primitive*> primitives, Light* light, View camera);
 
 public:
-    list<Primitive> primitives;
+    list<Primitive*> primitives;
 
     //Light info
     Light* light;
@@ -26,6 +26,8 @@ public:
     View camera;
 
     ImagePlane imagePlane;
+
+    Vec3 ambientColor;
 };
 
 #endif // SCENE_H

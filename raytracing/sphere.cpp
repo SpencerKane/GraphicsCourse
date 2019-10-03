@@ -2,44 +2,42 @@
 
 /* Constructors */
 Sphere::Sphere(Vec3 position, float radius) {
-    Sphere(position, radius, Material("", Colour(1.0f, 1.0f, 1.0f)));
+    Sphere(position, radius, Material());
 }
 Sphere::Sphere(Vec3 position, float radius, Material newMat) {
-    this->position = position;
+    this->center = Vec3(position);
     this->radius = radius;
     Sphere::mat = newMat;
 }
 
-float Sphere::calculateIntersectDistance(Vec3 ray, View camera) const {
+float Sphere::calculateIntersectDistance(Vec3 ray, Vec3 point) const {
     //Set up quadratic formula coefficients
     float A = ray.dot(ray);
-    float B = 2 * ((camera.viewLocation.dot(ray)) - this->center.dot(ray));
-    float C = camera.viewLocation.dot(camera.viewLocation)
+    float B = 2 * ((point.dot(ray)) - (this->center).dot(ray));
+    float C = point.dot(point)
             + this->center.dot(this->center)
-            - (2 * camera.viewLocation.dot(this->center))
-            - this->radius * this->radius;
+            - (2 * point.dot(this->center))
+            - pow(this->radius, 2);
 
     //Prepare to find the length of the ray
     float discriminant = (B * B) - (4 * A * C);
 
     //Find the distance from the intersection to the origin
-    if (discriminant < 0) {
+    if (discriminant < 0.0f) {
         return -1.0f; //No intesection.
     } else if (discriminant < 0.000001f && discriminant > -0.000001f) {
-        return (-B) / (2 * A); //Only a tangential intersection
+        return -1 * (B) / (2 * A); //Only a tangential intersection
     } else {
         //Two intersections here; we only want the smaller distance
         float solution1 = (sqrt(discriminant) - B) / (2 * A);
-        float solution2 = (-sqrt(discriminant) - B) / (2 * A);
-        return min(solution1, solution2);
-
-        //Note: If one sol'n is negative and the other is positive....
-        //We're inside the sphere!!
+        float solution2 = -1 * (sqrt(discriminant) + B) / (2 * A);
+        return (solution1 > 0.0f && solution2 > 0.0f) ? min(solution1, solution2)
+                        : max(solution1, solution2) ;
     }
 }
 
 Vec3 Sphere::calculateNormal(Vec3 point) const{
-    Vec3 n = this->position - point;
+    Vec3 n = this->center - point;
     n *= -1;
     n.normalize();
     return n;

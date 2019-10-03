@@ -11,7 +11,7 @@ class Light
 public:
     virtual float calculateIntersectDistance(Vec3 ray, Vec3 point) = 0;
 
-    virtual ~Light();
+    virtual ~Light() {}
 public:
     Vec3 center;
     Vec3 color;

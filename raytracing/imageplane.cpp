@@ -10,6 +10,7 @@ ImagePlane::ImagePlane()
 ImagePlane::ImagePlane(Vec3 ll, Vec3 ur, uint resW, uint resH){
     lowerLeft = Vec3(ll);
     upperRight = Vec3(ur);
+
     this->img = Image<Vec3>(resW, resH);
 }
 

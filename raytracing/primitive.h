@@ -6,7 +6,6 @@
 #include "view.h"
 
 using namespace OpenGP;
-using Colour = Vec3;
 
 class Primitive {
 public:
@@ -25,7 +24,7 @@ public:
      * the primitive. Negative return values implies the ray doesn't
      * intersect the primitive
      */
-    virtual float calculateIntersectDistance(Vec3 ray, View camera) const = 0;
+    virtual float calculateIntersectDistance(Vec3 ray, Vec3 camera) const = 0;
 
     /* Virtual Destructor */
     virtual ~Primitive() {}

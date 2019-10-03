@@ -32,7 +32,9 @@ public:
      * @param intialMedium The material (medium) the ray was travelling through
      * @return A Ray aimed in a suitable direction caused by an interssection
      */
-    Ray generateRay(Primitive p, Vec3 intersectPoint, Material intialMedium);
+    Ray* generateRay(Primitive* p, Vec3 intersectPoint, Material intialMedium);
+
+    ~Ray(){}
 
 public:
     Vec3 vector;

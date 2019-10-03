@@ -22,10 +22,11 @@ public:
      * @param camera The origin of the ray
      * @return A distance between the ray and the sphere
      */
-    float calculateIntersectDistance(Vec3 ray, View camera) const override;
+    float calculateIntersectDistance(Vec3 ray, Vec3 point) const override;
+
+    ~Sphere() override {}
 
 public:
-    Vec3 position;
     float radius;
 };
 

@@ -26,7 +26,9 @@ public:
      */
     Vec3 calculateNormal(Vec3 point) const override;
 
-    float calculateIntersectDistance(Vec3 ray, View camera) const override;
+    float calculateIntersectDistance(Vec3 ray, Vec3 point) const override;
+
+    ~Plane() override {}
 
 public:
     Vec3 vectorOne, vectorTwo;
