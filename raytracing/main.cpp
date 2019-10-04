@@ -15,6 +15,13 @@
 
 using namespace OpenGP;
 
+enum ColorCoordinate {
+    Red = 0,
+    Green = 1,
+    Blue = 2
+};
+
+const Vec3 ambientLightColor = Vec3(.75f, 1.0f, .55f);
 float getComponent(string componentName, string componentPurpose) {
     float result;
 
@@ -68,15 +75,54 @@ bool getIsInShadow(Vec3 intersectPoint, Scene scene) {
     return false; //No intersections in the direction of the ray
 }
 
-Vec3 doPhongShading(Scene scene, Primitive* p, Vec3 point, Vec3 ray) {
-    Vec3 normal = p->calculateNormal(point);
-    Vec3 lightdir = Vec3(scene.light->center);
-    float angle = (normal.dot(lightdir));
-    //float newangle = max(angle, 2.0f * 3.1415f - angle);
-    //cout << normal.x() << ", " << normal.y() << ", " << normal.z() <<endl;
-    //Calculate the shading of a point component-wise
-    return p->mat.getColor() * p->mat.getDiffuseConstant() * angle
-            + Vec3(1.0f, 1.0f, 1.0f) * p->mat.getSpecularConstant() * static_cast<float>(pow(p->reflect(ray, point).dot(scene.camera.viewDirection), p->mat.getGlossinessFactor()));
+float calculateAmbientEffect(Primitive* p, ColorCoordinate color) {
+    return p->mat.getAmbientConstant()[color] * ambientLightColor[color];
+}
+
+float calculateDiffuseEffect(Primitive* p, Vec3 point, Light* light, ColorCoordinate color) {
+    Vec3 lightDir = light->center - point;
+    lightDir.normalize();
+    float coefficient = p->mat.getDiffuseConstant()[color]
+            * p->calculateNormal(point).dot(lightDir);
+    return coefficient * light->diffuseIntensity[color];
+}
+
+float calculateSpecularEffect(Primitive* p, Vec3 ray, Vec3 point,
+                              Vec3 viewDir, Light* light, ColorCoordinate color) {
+    Vec3 reflector = p->reflect(ray, point);
+    reflector.normalize();
+
+    float glossEffect = (float) pow(reflector.dot(viewDir), p->mat.getGlossinessFactor());
+
+    return p->mat.getSpecularConstant()[color] * glossEffect * light->specularIntensity[color];
+}
+
+float doPhongShadingComponent(Primitive* p, Light* light, Vec3 ray,
+                              Vec3 intersectionPoint, Vec3 viewDir,
+                              ColorCoordinate color, bool isInShadow) {
+    float ambientValue = calculateAmbientEffect(p, color);
+    float diffuseValue, specularValue;
+
+    //If in shadow we only use ambient
+    if (isInShadow) {
+        diffuseValue = 0.0f;
+        specularValue = 0.0f;
+    } else {
+        diffuseValue = calculateDiffuseEffect(p, intersectionPoint, light, color);
+        specularValue = calculateSpecularEffect(p, ray, intersectionPoint, viewDir, light, color);
+    }
+
+    //Phong shading is sum of components
+    return ambientValue + diffuseValue + specularValue;
+}
+
+Vec3 doPhongShading(Primitive* p, Light* light, Vec3 ray,
+                    Vec3 intersectionPoint, Vec3 viewDir, bool isInShadow) {
+    float red = doPhongShadingComponent(p, light, ray, intersectionPoint, viewDir, Red, isInShadow);
+    float green = doPhongShadingComponent(p, light, ray, intersectionPoint, viewDir, Green, isInShadow);
+    float blue = doPhongShadingComponent(p, light, ray, intersectionPoint, viewDir, Blue, isInShadow);
+
+    return Vec3(red, green, blue);
 }
 
 Vec3 sampleColors(Scene scene, Ray* ray) {
@@ -101,11 +147,11 @@ Vec3 sampleColors(Scene scene, Ray* ray) {
             continue;
         } else {
             //Opaque objects need to worry about shadow
-            if (!(*iter)->isTransparent()
-                       || !(*iter)->mat.getColor().isApprox(Vec3(1.0f, 1.0f, 1.0f))){
-                //Sample color here
-                color += doPhongShading(scene, (*iter), Vec3(ray->vector * t), Vec3(ray->vector));
-            }
+//            if (!(*iter)->isTransparent()
+//                       || !(*iter)->mat.getColor().isApprox(Vec3(1.0f, 1.0f, 1.0f))){
+//                //Sample color here
+//                color += doPhongShading(scene, (*iter), Vec3(ray->vector * t), Vec3(ray->vector));
+//            }
 
             //cout << "An intersect occurred, ray timer: " << ray->timer << endl;
 
@@ -131,16 +177,15 @@ int main(int, char**){
     list<Primitive*> primitives = list<Primitive*>();
 
     //Define primitives and add them to the list
-    Sphere* sphere = new Sphere(Vec3(1, 0, -10), 1.0f, CHROME);
-    Plane* floor = new Plane(Vec3(1, 0, 0), Vec3(0, 0, 1), PEARL);
+    Sphere* sphere = new Sphere(Vec3(1, 0, -10), 1.0f, TURQUOISE);
+    Plane* floor = new Plane(Vec3(1, 0, 0), Vec3(2, 0.025f, -1), Vec3(0, 0, -1), BRASS);
 
-    cout << "Sphere position after init: " << Vec3(sphere->position) <<endl;
     primitives.push_front(floor);
     primitives.push_front(sphere);
 
     //Get our bearings
     Vec3 viewLocation = Vec3(0, 0, 0);//getViewLocation();
-    View camera = View(Vec3(0, 1, 0)/*getUp()*/,  -1 * sphere->position - viewLocation, viewLocation);
+    View camera = View(Vec3(0, 1, 0)/*getUp()*/,  -1 * sphere->center - viewLocation, viewLocation);
     Basis b = Basis(camera);
 
     //Place image plane half-way between sphere and camera
@@ -152,7 +197,7 @@ int main(int, char**){
                                 640, 640);//Resolution
 
     //Make a scene
-    Light *pl = new PointLight(Vec3(-5, -5, -5));
+    Light *pl = new PointLight(Vec3(3, 3, -1));
     Scene scene = Scene(primitives, pl, Vec3(0.5f, 0.5f, 0.5f), camera);
 
 
@@ -163,19 +208,41 @@ int main(int, char**){
             float percentOfRows = (float) row/img.rows();
             float widthOfImPlane = img.upperRight.x() - img.lowerLeft.x();
             float heightOfImPlane = widthOfImPlane;
+
             Ray* ray = new Ray(Vec3(img.lowerLeft + camera.viewLocation
                           + (percentOfColumns) * widthOfImPlane * Vec3(1, 0, 0)
                           + (percentOfRows) * (heightOfImPlane) * Vec3(0, 1, 0)));
+
             //cout << "Made a ray" << endl;
-            float t = sphere->calculateIntersectDistance(Vec3(ray->vector), Vec3(camera.viewLocation));
-            if (t < 0.00001f) {
-                img.img(row, col) = Vec3(0, 0, 0);
+            float s = sphere->calculateIntersectDistance(Vec3(ray->vector), Vec3(camera.viewLocation));
+            float t = floor->calculateIntersectDistance(Vec3(ray->vector), Vec3(camera.viewLocation));
+
+            if (t < 0.00001f && s < 0.00001f) {
+                img.img(row, col) = ambientLightColor;
                 delete ray;
                 continue;
             }
 
-            img.img(row, col) = Vec3(1.5f, 0.5f, 0.5f);//+ doPhongShading(scene, sphere, Vec3(t * ray->vector), Vec3(ray->vector));
+            bool isInShadow = false;
+            Vec3 lightDir = pl->center - t * ray->vector, intersectPoint;
+            lightDir.normalize();
+            float sphereDistance, planeDistance, lightDistance;
 
+            if (t < s) {
+//                intersectPoint = t * ray->vector;
+//                lightDistance = pl->calculateIntersectDistance(lightDir, intersectPoint);
+//                sphereDistance = sphere->calculateIntersectDistance(lightDir, intersectPoint);
+//                planeDistance = floor->calculateIntersectDistance(lightDir, intersectPoint);
+//                isInShadow = (sphereDistance > 0 || planeDistance > 0);
+                img.img(row, col) = doPhongShading(sphere, pl, ray->vector, s * ray->vector, Vec3(0, 0, -1), isInShadow);//+ doPhongShading(scene, sphere, Vec3(t * ray->vector), Vec3(ray->vector));
+            } else {
+//                intersectPoint = s * ray->vector;
+//                lightDistance = pl->calculateIntersectDistance(lightDir, intersectPoint);
+//                sphereDistance = sphere->calculateIntersectDistance(lightDir, intersectPoint);
+//                planeDistance = floor->calculateIntersectDistance(lightDir, intersectPoint);
+//                isInShadow = (sphereDistance > 0 || planeDistance > 0);
+                img.img(row, col) = doPhongShading(floor, pl, ray->vector, t * ray->vector, Vec3(0, 0, -1), isInShadow);
+            }
             delete ray;
         }
     }

@@ -3,15 +3,14 @@
 const float PRECISION = 0.0000001f;
 
 Plane::Plane(Vec3 vectorOne, Vec3 vectorTwo, Vec3 point, Material newMat) {
-    this->vectorOne = vectorOne;
-    this->vectorTwo = vectorTwo;
-    this->center = point;
+    this->vectorOne = Vec3(vectorOne);
+    this->vectorTwo = Vec3(vectorTwo);
+    this->center = Vec3(point);
     Primitive::mat = newMat;
 }
 
 Plane::Plane(Vec3 vectorOne, Vec3 vectorTwo, Material newMat) {
     Plane* p;
-    cout << "In plane"<< endl;
     if (vectorOne.cross(vectorTwo).isApprox(Vec3(0.f, 0.f, 0.f))) { //Cannot be collinear
         p = new Plane(Vec3(1, 0, 0), Vec3(0, 0, 0), mat);
     } else {
@@ -42,11 +41,11 @@ float Plane::calculateIntersectDistance(Vec3 ray, Vec3 point) const {
     float denominator = normal.dot(ray);
 
     //Verify the ray isn't parallel
-    if (normal.dot(ray) < PRECISION) {
+    if (abs(denominator) < PRECISION) {
 
         //If line is parallel, may lie on the plane
-        if (this->center.dot(normal) < PRECISION) {
-            return 0.0f;
+        if (abs(this->center.dot(normal)) < PRECISION) {
+            return 1.0f;
         } else {
             return -1.0f;
         }
@@ -54,7 +53,7 @@ float Plane::calculateIntersectDistance(Vec3 ray, Vec3 point) const {
     } else {
         //At this point we know we have one
         //honest-to-goodness intersection
-        return numerator / denominator;
+        return (float) numerator / denominator;
     }
 }
 

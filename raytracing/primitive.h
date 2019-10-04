@@ -29,10 +29,11 @@ public:
     /* Virtual Destructor */
     virtual ~Primitive() {}
 
-    Vec3 reflect(Vec3 ray, Vec3 point) const {
+    Vec3 reflect(Vec3 light, Vec3 point) const {
         Vec3 normal = calculateNormal(point);
 
-        Vec3 reflection = ray - (2 * ray.dot(normal) * normal);
+        Vec3 reflection = (2 * light.dot(normal) * normal) - light;
+        reflection.normalize();
         return reflection;
     }
 

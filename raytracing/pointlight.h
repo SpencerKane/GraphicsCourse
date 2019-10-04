@@ -7,7 +7,7 @@ class PointLight : public Light
 {
 public:
     PointLight(Vec3 center);
-    PointLight(Vec3 center, Vec3 color);
+    PointLight(Vec3 center, Vec3 diffuseIntensity, Vec3 specularIntensity);
 
     float calculateIntersectDistance(Vec3 ray, Vec3 point) override;
     ~PointLight() override;

@@ -3,14 +3,16 @@
 
 static const float PRECISION = 0.000001f;
 
-PointLight::PointLight(Vec3 newCenter, Vec3 newColor) {
-    this->center = Vec3(newCenter);
-    this->color = newColor;
+PointLight::PointLight(Vec3 center, Vec3 diffuseIntensity, Vec3 specularIntensity) {
+    this->center = Vec3(center);
+    this->diffuseIntensity = Vec3(diffuseIntensity);
+    this->specularIntensity = Vec3(specularIntensity);
 }
 
 PointLight::PointLight(Vec3 newCenter) {
     this->center = newCenter;
-    this->color = Vec3(1.0f, 1.0f, 1.0f);
+    this->diffuseIntensity = Vec3(1.0f, 1.0f, 1.0f);
+    this->specularIntensity = Vec3(1.0f, 1.0f, 1.0f);
 }
 
 float PointLight::calculateIntersectDistance(Vec3 ray, Vec3 rayOrigin) {

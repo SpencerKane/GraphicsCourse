@@ -1,9 +1,10 @@
 #include "spotlight.h"
 
-SpotLight::SpotLight(Vec3 newCenter, Vec3 direction, Vec3 newColor, float angle) {
+SpotLight::SpotLight(Vec3 newCenter, Vec3 direction, Vec3 diffuse, Vec3 specular, float angle) {
     this->center = newCenter;
     this->direction = direction;
-    this->color = newColor;
+    this->diffuseIntensity = diffuse;
+    this->specularIntensity = specular;
     
     //Angle is bounded between 0 and 90
     if (angle > 0 && angle < 90) {

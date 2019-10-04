@@ -6,7 +6,7 @@
 class SpotLight : public Light
 {
 public:
-    SpotLight(Vec3 center, Vec3 direction, Vec3 color, float angle);
+    SpotLight(Vec3 center, Vec3 direction, Vec3 diffuse, Vec3 specular, float angle);
 
     float calculateIntersectDistance(Vec3 ray, Vec3 point) override;
 

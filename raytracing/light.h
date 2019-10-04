@@ -14,7 +14,7 @@ public:
     virtual ~Light() {}
 public:
     Vec3 center;
-    Vec3 color;
+    Vec3 diffuseIntensity, specularIntensity;
 };
 
 #endif // LIGHT_H
